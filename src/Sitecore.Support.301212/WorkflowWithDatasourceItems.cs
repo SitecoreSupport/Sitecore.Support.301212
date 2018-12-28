@@ -57,8 +57,10 @@ namespace Sitecore.Support.XA.Foundation.Editing.Commands
         requiredResetableService.Value.Run("resolveRenderingDatasource", resolveRenderingDatasourceArgs);
         if (!string.IsNullOrWhiteSpace(resolveRenderingDatasourceArgs.Datasource))
         {
-          if (ID.TryParse(resolveRenderingDatasourceArgs.Datasource, out ID result))
+          bool isStandardPath = LocalTryParse(resolveRenderingDatasourceArgs.Datasource);
+          if (isStandardPath)
           {
+            ID result = ID.Parse(resolveRenderingDatasourceArgs.Datasource);
             Item item2 = service.GetItem(result);// Patch 521916: cater for language
             if (item2 != null)
             {
@@ -82,6 +84,28 @@ namespace Sitecore.Support.XA.Foundation.Editing.Commands
         }
       }
       return list;
+    }
+
+    public static bool LocalTryParse(string value)
+    { 
+      ID result = null;
+      if (value == null)
+      {
+        return false;
+      }
+      if ((value.Length != 38 || value[0] != '{') && !ID.IsID(value))
+      {
+        return false;
+      }
+      try
+      {
+        result = ID.Parse(value);
+      }
+      catch
+      {
+        return false;
+      }
+      return true;
     }
   }
 }
